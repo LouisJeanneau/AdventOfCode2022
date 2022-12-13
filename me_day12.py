@@ -57,8 +57,6 @@ def dijkstra_part2(map, start):
     print(shortest_overall)
     return
 
-
-
 with open("input.txt") as f:
     input = f.read().splitlines()
     start, finish = 0, 0
@@ -73,6 +71,11 @@ with open("input.txt") as f:
     heightmap[start[0]][start[1]] = 1
     heightmap[finish[0]][finish[1]] = 26
     cProfile.run("dijkstra(heightmap, start, finish)")
+
+
+
+
+    
     heightmap_inv = [[] for _ in range(len(input))]
     for i in range(len(input)):
         heightmap_inv[i] = [27-c for c in heightmap[i]]
