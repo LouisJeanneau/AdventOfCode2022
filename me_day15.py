@@ -2,6 +2,7 @@ import cProfile
 import re
 import matplotlib.pyplot as plt
 import matplotlib as mpl
+import z3
 from matplotlib.patches import Polygon
 
 mpl.use('Qt5Agg')
@@ -65,7 +66,6 @@ def part2():
             sensors.append((sensor_x, sensor_y, dist))
             beacons.append((beacon_x, beacon_y))
 
-        # print(sensors)
         sensors.sort(key=lambda x: x[0])
         min_x = sensors[0][0] - sensors[0][2]
         max_x = sensors[-1][0] + sensors[-1][2]
@@ -80,6 +80,26 @@ def part2():
         # plt.axis('scaled')
 
         plt.show()
+
+        # z3 solver seen on reddit
+        s = z3.Solver()
+        x, y = z3.Int("x"), z3.Int("y")
+        s.add(0 <= x)
+        s.add(x <= 4000000)
+        s.add(0 <= y)
+        s.add(y <= 4000000)
+
+        def z3_abs(x):
+            return z3.If(x >= 0, x, -x)
+
+        for sx, sy, d in sensors:
+            s.add(z3_abs(sx - x) + z3_abs(sy - y) > d)
+
+        assert s.check() == z3.sat
+        model = s.model()
+        print(f'x : {model[x].as_long()}  y : {model[y].as_long()}')
+        print("Part 2:", model[x].as_long() * 4000000 + model[y].as_long())
+
         plt.pause(1000)
         return
 
