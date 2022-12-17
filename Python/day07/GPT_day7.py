@@ -25,8 +25,8 @@ class Directory:
 
 def parse_input(input_str):
     lines = input_str.strip().split("\n")
-    current_directory = Directory("/")
-    current_directory.contents[".."] = current_directory
+    root = Directory("/")
+    current_directory = root
     for line in lines:
         if line.startswith("$ cd"):
             # Split the line into parts and extract the argument
@@ -35,10 +35,10 @@ def parse_input(input_str):
                 arg = parts[2]
                 if arg == "/":
                     # If the argument is /, switch to the outermost directory
-                    current_directory = Directory("/")
+                    current_directory = root
                 elif arg == "..":
                     # If the argument is .., move out one level
-                    current_directory = current_directory.contents[".."]
+                    # TODO
                 else:
                     # Otherwise, move into the specified directory
                     current_directory = current_directory.contents[arg]
@@ -49,7 +49,6 @@ def parse_input(input_str):
                 # If the item is a directory, add it to the current directory
                 name = item[1]
                 directory = Directory(name)
-                directory.contents[".."] = current_directory
                 current_directory.add_directory(directory)
             else:
                 # If the item is a file, extract the name and size and add it to the current directory
@@ -78,6 +77,7 @@ def sum_small_directories(root, max_size):
 with open("input.txt") as f:
     input_str = f.read()
 
+# Non-working
 filesystem = parse_input(input_str)
 total_size = sum_small_directories(filesystem, 100000)
 print(total_size)
