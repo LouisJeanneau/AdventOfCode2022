@@ -1,59 +1,66 @@
 from collections import deque
 
 import numpy as np
+
 add_robot = np.eye(4)
 blueprints = []
 
+
 def bfs(init_robot, init_ressources, init_time, cost, ans):
     q = deque()
-    q.append((init_robot, init_ressources, init_time))
-    max_robots = tuple(max(cost[:,i]) if i < 3 else 99 for i in range(4))
+    r1, r2, r3, r4 = init_robot
+    ore, clay, obsi, geod = init_ressources
+    q.append((r1, r2, r3, r4, ore, clay, obsi, geod, init_time))
+    max_robots = tuple(max(cost[:, i]) if i < 3 else 99 for i in range(4))
     seen = set()
     while len(q):
-        robots, ressources, time = q.popleft()
+        r1, r2, r3, r4, ore, clay, obsi, geod, time = q.popleft()
 
-        # ore_cost, clay_cost, obsidian_cost_ore, obsidian_cost_clay, geode_cost_ore, geode_cost_clay
-        # Co, Cc, Co1, Co2, Cg1, Cg2, T):
+        if r1 > max_robots[0]:
+            r1 = max_robots[0]
+        if r2 > max_robots[1]:
+            r2 = max_robots[0]
+        if r3 > max_robots[2]:
+            r3 = max_robots[2]
+        if ore > time * max_robots[0] - r1 * (time - 1):
+            ore = time * max_robots[0] - r1 * (time - 1)
+        if clay > time * cost[2][1] - r2 * (time - 1):
+            clay = time * cost[2][1] - r2 * (time - 1)
+        if obsi > time * cost[3][2] - r3 * (time - 1):
+            obsi = time * cost[3][2] - r3 * (time - 1)
 
-        #(ore, clay, obsidian, geodes, r1, r2, r3, r4, time)
-        # o, c, ressources[2], g, r1, r2, r3, r4, t
-        #(0, 0, 0,  0,  1,  0,  0, 0,  T)
-        if robots[0] > max_robots[0]:
-            robots[0] = max_robots[0]
-        if robots[1] > max_robots[1]:
-            robots[1] = max_robots[0]
-        if robots[2] > max_robots[2]:
-            robots[2] = max_robots[2]
-        if ressources[0] >= time * max_robots[0] - robots[0] * (time - 1):
-            ressources[0] = time * max_robots[0] - robots[0] * (time - 1)
-        if ressources[1] >= time * cost[1][1] - robots[1] * (time - 1):
-            ressources[1] = time * cost[1][1] - robots[1] * (time - 1)
-        if ressources[2] >= time * cost[2][2] - robots[2] * (time - 1):
-            ressources[2] = time * cost[2][2] - robots[2] * (time - 1)
-
-        state = (robots , ressources, time)
+        state = r1, r2, r3, r4, ore, clay, obsi, geod, time
 
         if state in seen:
             continue
         seen.add(state)
 
+        ans = max(ans, geod)
 
-        ans = max(ans, ressources[3])
-
-        if time == 25:
+        if time == 0:
             continue
 
+        # for robot in range(3, -1, -1):
+        #     if robots[robot] == max_robots[robot]:
+        #         continue
+        #
+        #     sub = np.subtract(ressources, cost[robot])
+        #     if (sub < 0).any():
+        #         continue
+        #     q.append((np.add(robots, add_robot[robot]), np.add(sub, robots), time + 1))
+        #     break
+        q.append((r1, r2, r3, r4, ore + r1, clay + r2, obsi + r3, geod + r4, time - 1))
+        if ore >= cost[0][0]: # buy r1
+            q.append((r1 + 1, r2, r3, r4, ore + r1 - cost[0][0], clay + r2, obsi + r3, geod + r4, time - 1))
+        if ore >= cost[1][0]: # r2
+            q.append((r1, r2 + 1, r3, r4, ore + r1 - cost[1][0], clay + r2, obsi + r3, geod + r4, time - 1))
+        if clay >= cost[2][1] and ore >= cost[2][0]:
+            q.append((r1, r2, r3 + 1, r4, ore + r1 - cost[2][0], clay + r2 - cost[2][1], obsi + r3, geod + r4, time - 1))
+        if obsi >= cost[3][2] and ore >= cost[3][0]:
+            q.append((r1, r2, r3, r4 + 1, ore + r1 - cost[3][0], clay + r2, obsi + r3 - cost[3][2], geod + r4, time - 1))
 
-        for robot in range(3, -1, -1):
-            if robots[robot] == max_robots[robot]:
-                continue
 
-            sub = np.subtract(ressources, cost[robot])
-            if (sub < 0).any():
-                continue
-            q.append((np.add(robots, add_robot[robot]), np.add(sub, robots), time+1))
-            break
-        q.append((robots, np.add(ressources, robots), time+1))
+
 
     return ans
 
@@ -76,8 +83,8 @@ with open("demo.txt") as f:
     ressources = np.array([0, 0, 0, 0], int)
     robots = np.array([1, 0, 0, 0], int)
 
-    ans = 0
-    bfs(robots, ressources, 1, blueprints[1], ans)
-    print(ans)
-
-
+    sum = 0
+    for i, b in enumerate(blueprints):
+        print(i)
+        sum += (i+1) * bfs(robots, ressources, 24, b, 0)
+    print(sum)
