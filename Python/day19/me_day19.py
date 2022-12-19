@@ -3,7 +3,6 @@ from collections import deque
 import numpy as np
 
 add_robot = np.eye(4)
-blueprints = []
 
 
 def bfs(init_robot, init_ressources, init_time, cost, ans):
@@ -16,12 +15,8 @@ def bfs(init_robot, init_ressources, init_time, cost, ans):
     while len(q):
         r1, r2, r3, r4, ore, clay, obsi, geod, time = q.popleft()
 
-        if r1 > max_robots[0]:
-            r1 = max_robots[0]
-        if r2 > max_robots[1]:
-            r2 = max_robots[0]
-        if r3 > max_robots[2]:
-            r3 = max_robots[2]
+        if r1 > max_robots[0] or r2 > max_robots[1] or r3 > max_robots[2]:
+            continue
         if ore > time * max_robots[0] - r1 * (time - 1):
             ore = time * max_robots[0] - r1 * (time - 1)
         if clay > time * cost[2][1] - r2 * (time - 1):
@@ -50,22 +45,20 @@ def bfs(init_robot, init_ressources, init_time, cost, ans):
         #     q.append((np.add(robots, add_robot[robot]), np.add(sub, robots), time + 1))
         #     break
         q.append((r1, r2, r3, r4, ore + r1, clay + r2, obsi + r3, geod + r4, time - 1))
-        if ore >= cost[0][0]: # buy r1
+        if ore >= cost[0][0]:  # buy r1
             q.append((r1 + 1, r2, r3, r4, ore + r1 - cost[0][0], clay + r2, obsi + r3, geod + r4, time - 1))
-        if ore >= cost[1][0]: # r2
+        if ore >= cost[1][0]:  # r2
             q.append((r1, r2 + 1, r3, r4, ore + r1 - cost[1][0], clay + r2, obsi + r3, geod + r4, time - 1))
         if clay >= cost[2][1] and ore >= cost[2][0]:
-            q.append((r1, r2, r3 + 1, r4, ore + r1 - cost[2][0], clay + r2 - cost[2][1], obsi + r3, geod + r4, time - 1))
+            q.append(
+                (r1, r2, r3 + 1, r4, ore + r1 - cost[2][0], clay + r2 - cost[2][1], obsi + r3, geod + r4, time - 1))
         if obsi >= cost[3][2] and ore >= cost[3][0]:
-            q.append((r1, r2, r3, r4 + 1, ore + r1 - cost[3][0], clay + r2, obsi + r3 - cost[3][2], geod + r4, time - 1))
-
-
-
-
+            q.append(
+                (r1, r2, r3, r4 + 1, ore + r1 - cost[3][0], clay + r2, obsi + r3 - cost[3][2], geod + r4, time - 1))
     return ans
 
 
-with open("demo.txt") as f:
+with open("input.txt") as f:
     input = f.read().splitlines()
     # Parse cost
     splitted_input = [l.split() for l in input]
@@ -84,7 +77,13 @@ with open("demo.txt") as f:
     robots = np.array([1, 0, 0, 0], int)
 
     sum = 0
-    for i, b in enumerate(blueprints):
+    # for i, b in enumerate(blueprints):
+    #     sum += (i + 1) * bfs(robots, ressources, 24, b, 0)
+    #     print(i)
+    # print(sum)
+
+    mux = 1
+    for i in range(3):
+        mux *= bfs(robots, ressources, 32, blueprints[i], 0)
         print(i)
-        sum += (i+1) * bfs(robots, ressources, 24, b, 0)
-    print(sum)
+    print(mux)
