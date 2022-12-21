@@ -3,7 +3,7 @@ import numpy
 
 
 class Node:
-    def __init__(self, data: list[int, bool]):
+    def __init__(self, data: list[int, int]):
         self.data = data
         self.next = None
         self.prev = None
@@ -19,7 +19,7 @@ class DoubleCyclicLinkedList:
     def __init__(self):
         self.head = None
 
-    def append(self, data: list[int, bool]):
+    def append(self, data: list[int, int]):
         new_node = Node(data)
         if self.head is None:
             self.head = new_node
@@ -34,7 +34,7 @@ class DoubleCyclicLinkedList:
             new_node.next = self.head
             self.head.prev = new_node
 
-    def prepend(self, data: list[int, bool]):
+    def prepend(self, data: list[int, int]):
         new_node = Node(data)
         curr = self.head
         new_node.next = self.head
@@ -43,7 +43,7 @@ class DoubleCyclicLinkedList:
         curr.prev.next = new_node
         self.head = new_node
 
-    def delete(self, data: list[int, bool]):
+    def delete(self, data: list[int, int]):
         if self.head is None:
             return
         if self.head.next == self.head:
@@ -66,7 +66,8 @@ class DoubleCyclicLinkedList:
     def print_list(self):
         curr = self.head
         while curr:
-            print(str(curr.data[0]) + ":" + str(curr.data[1]), sep=' ', end=",    ")
+            # print(str(curr.data[0]) + ":" + str(curr.data[1]), sep=' ', end=",    ")
+            print(str(curr.data[0]), sep='', end=", ")
             curr = curr.next
             if curr == self.head:
                 break
@@ -82,7 +83,7 @@ class DoubleCyclicLinkedList:
                 curr = curr.prev
         return curr
 
-    def append_from(self, data: list[int, bool], from_node: Node):
+    def append_from(self, data: list[int, int], from_node: Node):
         new_node = Node(data)
         if self.head is None:
             self.head = new_node
@@ -95,7 +96,7 @@ class DoubleCyclicLinkedList:
             new_node.next = curr.next
             curr.next.prev = new_node
 
-    def prepend_from(self, data: list[int, bool], from_node: Node):
+    def prepend_from(self, data: list[int, int], from_node: Node):
         new_node = Node(data)
         curr = from_node.copy()
         new_node.next = from_node
@@ -112,40 +113,43 @@ class DoubleCyclicLinkedList:
             curr = curr.next
         return curr
 
-
+    def find_zero(self):
+        curr = self.head
+        while curr.data[0] != 0:
+            curr = curr.next
+        return curr
 
 
 with open("input.txt") as f:
     input = f.read().splitlines()
     # Parse cost
-    input_list = [[int(i), False] for i in input]
+    input_list = [[int(i[1]), i[0]] for i in enumerate(input)]
 
     dcll = DoubleCyclicLinkedList()
     dcll.append(input_list[0])
     starting_node = dcll.head
     for inp in input_list[1:]:
         dcll.prepend_from(inp, starting_node)
-
-    # dcll.print_list()
+    l = len(input_list)
+    dcll.print_list()
     print()
     for number in input_list:
         node = dcll.find_node(number)
-        from_node = dcll.swipe(node, number[0])
         if number[0]:
             dcll.delete(number)
-        else:
-            node.data[1] = True
+        from_node = dcll.swipe(node, number[0])
         if numpy.sign(number[0]) == 1:
-            dcll.append_from([number[0], True], from_node)
+            dcll.append_from(number, from_node)
         elif numpy.sign(number[0]) == -1:
-            dcll.prepend_from([number[0], True], from_node)
-        print(dcll.head.data[0])
+            dcll.prepend_from(number, from_node)
+        # print(dcll.print_list())
     dcll.print_list()
     print()
-    head_node = dcll.find_node([0, True])
+    # head_node = dcll.find_node([0, ])
+    head_node = dcll.find_zero()
     sum = 0
     for i in range(3):
-        v = dcll.swipe(head_node, (i+1)*1000).data[0]
+        v = dcll.swipe(head_node, (i + 1) * 1000).data[0]
         print(v)
         sum += v
     print()
