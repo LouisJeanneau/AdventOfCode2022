@@ -69,8 +69,9 @@ class DoubleCyclicLinkedList:
             # print(str(curr.data[0]) + ":" + str(curr.data[1]), sep=' ', end=",    ")
             print(str(curr.data[0]), sep='', end=", ")
             curr = curr.next
-            if curr == self.head:
+            if curr.data == self.head.data:
                 break
+        print()
 
     # Homemade addition
     def swipe(self, from_node: Node, position: int) -> Node:
@@ -119,6 +120,24 @@ class DoubleCyclicLinkedList:
             curr = curr.next
         return curr
 
+    def move(self, data, position):
+        if not position:
+            return
+        curr = self.find_node(data)
+        prev_node = curr.prev
+        next_node = curr.next
+        for _ in range(position):
+            curr = curr.next
+        prev_node.next = next_node
+        next_node.prev = prev_node
+        n = Node(data)
+        curr.next.prev = n
+        n.next = curr.next
+        n.prev = curr
+        curr.next = n
+        if data == self.head.data:
+            self.head = curr.prev
+
 
 with open("input.txt") as f:
     input = f.read().splitlines()
@@ -130,27 +149,31 @@ with open("input.txt") as f:
     starting_node = dcll.head
     for inp in input_list[1:]:
         dcll.prepend_from(inp, starting_node)
-    l = len(input_list)
     dcll.print_list()
-    print()
+    l = len(input_list)
+
     for number in input_list:
+        dcll.move(number, number[0] % (l-1))
+        # dcll.print_list()
+        '''
         node = dcll.find_node(number)
         if number[0]:
             dcll.delete(number)
-        from_node = dcll.swipe(node, number[0])
+
         if numpy.sign(number[0]) == 1:
+            from_node = dcll.swipe(node, number[0] % (len(input_list)))
             dcll.append_from(number, from_node)
         elif numpy.sign(number[0]) == -1:
+            from_node = dcll.swipe(node, number[0] )
             dcll.prepend_from(number, from_node)
-        # print(dcll.print_list())
+        '''
+
     dcll.print_list()
-    print()
-    # head_node = dcll.find_node([0, ])
+
     head_node = dcll.find_zero()
     sum = 0
     for i in range(3):
         v = dcll.swipe(head_node, (i + 1) * 1000).data[0]
         print(v)
         sum += v
-    print()
     print(sum)
