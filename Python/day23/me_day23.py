@@ -55,7 +55,7 @@ with open("input.txt") as f:
     stop = True
     # STEPS
     for step in range(1000):
-        debug()
+        # debug()
         temp_dict.clear()
         stop = True
         # propose
@@ -66,6 +66,7 @@ with open("input.txt") as f:
                 temp_dict[pos] = l
                 continue
             for try_number in range(4):
+                stop = False
                 res = sum(
                     elves_pos.get(tuple(np.add(pos, neighbours[(step + try_number) % 4][n])), 0) for n in range(3))
 
@@ -82,7 +83,9 @@ with open("input.txt") as f:
                     l = temp_dict.get(pos, [])
                     l.append(pos)
                     temp_dict[pos] = l
-
+        if stop:
+            print(step+1)
+            break
         elves_pos.clear()
         # move
         for grid_pos, elves in temp_dict.items():
@@ -92,7 +95,7 @@ with open("input.txt") as f:
                 for e in elves:
                     elves_pos[e] = 1
 
-    debug()
+    # debug()
     max_x = max(elves_pos.keys(), key=lambda x: x[0])[0]
     min_x = min(elves_pos.keys(), key=lambda x: x[0])[0]
     max_y = max(elves_pos.keys(), key=lambda x: x[1])[1]
